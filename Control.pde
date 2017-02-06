@@ -27,10 +27,8 @@ void move() {
   if ( myPort.available() > 0) 
   {  // If data is available,
   val = myPort.readStringUntil('\n');         // read it and store it in val
-   String movx = val.substring(2,3);
+   String movx = val.substring(3,6);
    println(movx);
-speed = Integer.parseInt(movx);
-x=x+speed;
 }
 }
 
