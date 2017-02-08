@@ -27,10 +27,14 @@ void move() {
   if ( myPort.available() > 0) 
   {  // If data is available,
   val = myPort.readStringUntil('\n');         // read it and store it in val
-   String movx = val.substring(3,6);
-   println(movx);
+  if (val != null){
+    movx = val.substring(3,5);
+    println(movx);
+   float speed = Float.parseFloat(movx);
+   x= x+(speed);
+  }
 }
-}
+  }
 
 void display () {
   fill(c);
