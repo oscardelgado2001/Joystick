@@ -1,10 +1,10 @@
 import processing.serial.*;
 Serial myPort;  // Create object from Serial class
 String val;     // Data received from the serial port
+String movx;
 color c = color (255,0,0);
-int x= 500;
-int y = 500;
-int speed=0;
+float x= 500;
+float y = 500;
 void setup(){
   size(1366,788);
     // I know that the first port in the serial list on my mac
@@ -35,6 +35,7 @@ void move() {
   }
 }
   }
+
 
 void display () {
   fill(c);
