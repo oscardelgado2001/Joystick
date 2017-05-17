@@ -2,9 +2,11 @@ import processing.serial.*;
 Serial myPort;  // Create object from Serial class
 String val;     // Data received from the serial port
 String movx;
-color c = color (255,0,0);
-float x= 500;
+color c = color (0);
+float x= 20;
 float y = 500;
+float xbola = 300;
+float ybola = 400;
 void setup(){
   size(1366,788);
     // I know that the first port in the serial list on my mac
@@ -19,7 +21,6 @@ void draw(){
   background(255);
   move();
   display();
-  
 }
 
 
@@ -30,14 +31,49 @@ void move() {
   if (val != null){
     movx = val.substring(3,5);
     println(movx);
-   float speed = Float.parseFloat(movx);
-   x= x+(speed);
+    float speed = Float.parseFloat(movx);
+    speed = speed*5;
+    y= y+(speed);
+    
+    
+  float xspeedball = 1;
+  float yspeedball = 1;
+  xspeedball= xspeedball*5;
+  yspeedball= yspeedball*5;
+  xbola = xbola*(xspeedball);
+  ybola = ybola*(yspeedball);
+    
+  if (y < 0){
+    y = 0;
   }
+  
+  if (y > 580){
+    y = 580;
+  }
+  
+  if (xbola>1366){
+    xspeedball = xspeedball * (-1);
+  }
+  
+  if (ybola > 580){
+    yspeedball = yspeedball * (-1);
+  }
+  
+  if (xbola < 35){
+    xspeedball = xspeedball * (-1);
+  }
+  
+  if (ybola < 0){
+    yspeedball = yspeedball * (-1);
+  
+  }
+}}
 }
-  }
+  
 
 
 void display () {
   fill(c);
-  rect(x,y,30,30);
+  rect(x,y,30,175);
+  rect(xbola,ybola,20,20);
 }
