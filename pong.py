@@ -1,170 +1,208 @@
-#PONG pygame
-
-import random
 import pygame, sys
 from pygame.locals import *
 
-pygame.init()
-fps = pygame.time.Clock()
+# Number of frames per second
+# Change this value to speed up or slow down your game
+FPS = 200
 
-#colors
-WHITE = (255,255,255)
-RED = (255,0,0)
-GREEN = (0,255,0)
-BLACK = (0,0,0)
+#Global Variables to be used through our program
 
-#globals
-WIDTH = 600
-HEIGHT = 400       
-BALL_RADIUS = 20
-PAD_WIDTH = 8
-PAD_HEIGHT = 80
-HALF_PAD_WIDTH = PAD_WIDTH / 2
-HALF_PAD_HEIGHT = PAD_HEIGHT / 2
-ball_pos = [0,0]
-ball_vel = [0,0]
-paddle1_vel = 0
-paddle2_vel = 0
-l_score = 0
-r_score = 0
+WINDOWWIDTH = 800
+WINDOWHEIGHT = 600
+LINETHICKNESS = 20
+PADDLESIZE = 100
+PADDLEOFFSET = 40
 
-#canvas declaration
-window = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
-pygame.display.set_caption('Hello World')
+# Set up the colours
+BLACK     = (0  ,0  ,0  )
+WHITE     = (255,255,255)
 
-# helper function that spawns a ball, returns a position vector and a velocity vector
-# if right is True, spawn to the right, else spawn to the left
-def ball_init(right):
-    global ball_pos, ball_vel # these are vectors stored as lists
-    ball_pos = [WIDTH/2,HEIGHT/2]
-    horz = random.randrange(2,4)
-    vert = random.randrange(1,3)
-    
-    if right == False:
-        horz = - horz
-        
-    ball_vel = [horz,-vert]
-
-# define event handlers
-def init():
-    global paddle1_pos, paddle2_pos, paddle1_vel, paddle2_vel,l_score,r_score  # these are floats
-    global score1, score2  # these are ints
-    paddle1_pos = [HALF_PAD_WIDTH - 1,HEIGHT/2]
-    paddle2_pos = [WIDTH +1 - HALF_PAD_WIDTH,HEIGHT/2]
-    l_score = 0
-    r_score = 0
-    if random.randrange(0,2) == 0:
-        ball_init(True)
-    else:
-        ball_init(False)
+#Draws the arena the game will be played in. 
+def drawArena():
+    DISPLAYSURF.fill((0,0,0))
+    #Draw outline of arena
+    pygame.draw.rect(DISPLAYSURF, WHITE, ((0,0),(WINDOWWIDTH,WINDOWHEIGHT)), LINETHICKNESS*2)
+    #Draw centre line
+    pygame.draw.line(DISPLAYSURF, WHITE, ((WINDOWWIDTH/2),0),((WINDOWWIDTH/2),WINDOWHEIGHT), (LINETHICKNESS/4))
 
 
-#draw function of canvas
-def draw(canvas):
-    global paddle1_pos, paddle2_pos, ball_pos, ball_vel, l_score, r_score
-           
-    canvas.fill(BLACK)
-    pygame.draw.line(canvas, WHITE, [WIDTH / 2, 0],[WIDTH / 2, HEIGHT], 1)
-    pygame.draw.line(canvas, WHITE, [PAD_WIDTH, 0],[PAD_WIDTH, HEIGHT], 1)
-    pygame.draw.line(canvas, WHITE, [WIDTH - PAD_WIDTH, 0],[WIDTH - PAD_WIDTH, HEIGHT], 1)
-    pygame.draw.circle(canvas, WHITE, [WIDTH//2, HEIGHT//2], 70, 1)
-
-    # update paddle's vertical position, keep paddle on the screen
-    if paddle1_pos[1] > HALF_PAD_HEIGHT and paddle1_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
-        paddle1_pos[1] += paddle1_vel
-    elif paddle1_pos[1] == HALF_PAD_HEIGHT and paddle1_vel > 0:
-        paddle1_pos[1] += paddle1_vel
-    elif paddle1_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle1_vel < 0:
-        paddle1_pos[1] += paddle1_vel
-    
-    if paddle2_pos[1] > HALF_PAD_HEIGHT and paddle2_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
-        paddle2_pos[1] += paddle2_vel
-    elif paddle2_pos[1] == HALF_PAD_HEIGHT and paddle2_vel > 0:
-        paddle2_pos[1] += paddle2_vel
-    elif paddle2_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle2_vel < 0:
-        paddle2_pos[1] += paddle2_vel
-
-    #update ball
-    ball_pos[0] += int(ball_vel[0])
-    ball_pos[1] += int(ball_vel[1])
-
-    #draw paddles and ball
-    pygame.draw.circle(canvas, RED, ball_pos, 20, 0)
-    pygame.draw.polygon(canvas, GREEN, [[paddle1_pos[0] - HALF_PAD_WIDTH, paddle1_pos[1] - HALF_PAD_HEIGHT], [paddle1_pos[0] - HALF_PAD_WIDTH, paddle1_pos[1] + HALF_PAD_HEIGHT], [paddle1_pos[0] + HALF_PAD_WIDTH, paddle1_pos[1] + HALF_PAD_HEIGHT], [paddle1_pos[0] + HALF_PAD_WIDTH, paddle1_pos[1] - HALF_PAD_HEIGHT]], 0)
-    pygame.draw.polygon(canvas, GREEN, [[paddle2_pos[0] - HALF_PAD_WIDTH, paddle2_pos[1] - HALF_PAD_HEIGHT], [paddle2_pos[0] - HALF_PAD_WIDTH, paddle2_pos[1] + HALF_PAD_HEIGHT], [paddle2_pos[0] + HALF_PAD_WIDTH, paddle2_pos[1] + HALF_PAD_HEIGHT], [paddle2_pos[0] + HALF_PAD_WIDTH, paddle2_pos[1] - HALF_PAD_HEIGHT]], 0)
-
-    #ball collision check on top and bottom walls
-    if int(ball_pos[1]) <= BALL_RADIUS:
-        ball_vel[1] = - ball_vel[1]
-    if int(ball_pos[1]) >= HEIGHT + 1 - BALL_RADIUS:
-        ball_vel[1] = -ball_vel[1]
-    
-    #ball collison check on gutters or paddles
-    if int(ball_pos[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball_pos[1]) in range(paddle1_pos[1] - HALF_PAD_HEIGHT,paddle1_pos[1] + HALF_PAD_HEIGHT,1):
-        ball_vel[0] = -ball_vel[0]
-        ball_vel[0] *= 1.1
-        ball_vel[1] *= 1.1
-    elif int(ball_pos[0]) <= BALL_RADIUS + PAD_WIDTH:
-        r_score += 1
-        ball_init(True)
-        
-    if int(ball_pos[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(ball_pos[1]) in range(paddle2_pos[1] - HALF_PAD_HEIGHT,paddle2_pos[1] + HALF_PAD_HEIGHT,1):
-        ball_vel[0] = -ball_vel[0]
-        ball_vel[0] *= 1.1
-        ball_vel[1] *= 1.1
-    elif int(ball_pos[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH:
-        l_score += 1
-        ball_init(False)
-
-    #update scores
-    myfont1 = pygame.font.SysFont("Comic Sans MS", 20)
-    label1 = myfont1.render("Score "+str(l_score), 1, (255,255,0))
-    canvas.blit(label1, (50,20))
-
-    myfont2 = pygame.font.SysFont("Comic Sans MS", 20)
-    label2 = myfont2.render("Score "+str(r_score), 1, (255,255,0))
-    canvas.blit(label2, (470, 20))  
-    
-    
-#keydown handler
-def keydown(event):
-    global paddle1_vel, paddle2_vel
-    
-    if event.key == K_UP:
-        paddle2_vel = -8
-    elif event.key == K_DOWN:
-        paddle2_vel = 8
-    elif event.key == K_w:
-        paddle1_vel = -8
-    elif event.key == K_s:
-        paddle1_vel = 8
-
-#keyup handler
-def keyup(event):
-    global paddle1_vel, paddle2_vel
-    
-    if event.key in (K_w, K_s):
-        paddle1_vel = 0
-    elif event.key in (K_UP, K_DOWN):
-        paddle2_vel = 0
-
-init()
+#Draws the paddle
+def drawPaddle(paddle):
+    #Stops paddle moving too low
+    if paddle.bottom > WINDOWHEIGHT - LINETHICKNESS:
+        paddle.bottom = WINDOWHEIGHT - LINETHICKNESS
+    #Stops paddle moving too high
+    elif paddle.top < LINETHICKNESS:
+        paddle.top = LINETHICKNESS
+    #Draws paddle
+    pygame.draw.rect(DISPLAYSURF, WHITE, paddle)
 
 
-#game loop
-while True:
+#draws the ball
+def drawBall(ball):
+    pygame.draw.rect(DISPLAYSURF, WHITE, ball)
 
-    draw(window)
+#moves the ball returns new position
+def moveBall(ball, ballDirX, ballDirY):
+    ball.x += ballDirX
+    ball.y += ballDirY
+    return ball
 
-    for event in pygame.event.get():
+#Checks for a collision with a wall, and 'bounces' ball off it.
+#Returns new direction
+def checkEdgeCollision(ball, ballDirX, ballDirY):
+    if ball.top == (LINETHICKNESS) or ball.bottom == (WINDOWHEIGHT - LINETHICKNESS):
+        ballDirY = ballDirY * -1
+    if ball.left == (LINETHICKNESS) or ball.right == (WINDOWWIDTH - LINETHICKNESS):
+        ballDirX = ballDirX * -1
+    return ballDirX, ballDirY
 
-        if event.type == KEYDOWN:
-            keydown(event)
-        elif event.type == KEYUP:
-            keyup(event)
-        elif event.type == QUIT:
-            pygame.quit()
-            sys.exit()
-            
-    pygame.display.update()
-    fps.tick(60)
+#Checks is the ball has hit a paddle, and 'bounces' ball off it.     
+def checkHitBall(ball, paddle1, paddle2, ballDirX):
+    if ballDirX == -1 and paddle1.right == ball.left and paddle1.top < ball.top and paddle1.bottom > ball.bottom:
+        return -1
+    elif ballDirX == 1 and paddle2.left == ball.right and paddle2.top < ball.top and paddle2.bottom > ball.bottom:
+        return -1
+    else: return 1
+
+#Checks to see if a point has been scored returns new score
+def checkPointScored(paddle1, ball, score, ballDirX):
+    #reset points if left wall is hit
+    if ball.left == LINETHICKNESS: 
+        return 0
+    #1 point for hitting the ball
+    elif ballDirX == -1 and paddle1.right == ball.left and paddle1.top < ball.top and paddle1.bottom > ball.bottom:
+        score += 1
+        return score
+    #5 points for beating the other paddle
+    elif ball.right == WINDOWWIDTH - LINETHICKNESS:
+        score += 5
+        return score
+    #if no points scored, return score unchanged
+    else: return score
+
+#Artificial Intelligence of computer player 
+def artificialIntelligence(ball, ballDirX, paddle2):
+    #If ball is moving away from paddle, center bat
+    if ballDirX == -1:
+        if paddle2.centery < (WINDOWHEIGHT/2):
+            paddle2.y += 1
+        elif paddle2.centery > (WINDOWHEIGHT/2):
+            paddle2.y -= 1
+    #if ball moving towards bat, track its movement. 
+    elif ballDirX == 1:
+        if paddle2.centery < ball.centery:
+            paddle2.y += 1
+        else:
+            paddle2.y -=1
+    return paddle2
+
+#Displays the current score on the screen
+def displayScore(score):
+    resultSurf = BASICFONT.render('Score = %s' %(score), True, WHITE)
+    resultRect = resultSurf.get_rect()
+    resultRect.topleft = (WINDOWWIDTH - 150, 25)
+    DISPLAYSURF.blit(resultSurf, resultRect)
+
+#Main function
+def main():
+    pygame.init()
+    global DISPLAYSURF
+    ##Font information
+    global BASICFONT, BASICFONTSIZE
+    BASICFONTSIZE = 20
+    BASICFONT = pygame.font.Font('freesansbold.ttf', BASICFONTSIZE)
+
+    FPSCLOCK = pygame.time.Clock()
+    DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH,WINDOWHEIGHT)) 
+    pygame.display.set_caption('Pong')
+
+    #Initiate variable and set starting positions
+    #any future changes made within rectangles
+    ballX = WINDOWWIDTH/2 - LINETHICKNESS/2
+    ballY = WINDOWHEIGHT/2 - LINETHICKNESS/2
+    playerOnePosition = (WINDOWHEIGHT - PADDLESIZE) /2
+    playerTwoPosition = (WINDOWHEIGHT - PADDLESIZE) /2
+    score = 0
+
+    #Keeps track of ball direction
+    ballDirX = -1 ## -1 = left 1 = right
+    ballDirY = -1 ## -1 = up 1 = down
+
+    #Creates Rectangles for ball and paddles.
+    paddle1 = pygame.Rect(PADDLEOFFSET,playerOnePosition, LINETHICKNESS,PADDLESIZE)
+    paddle2 = pygame.Rect(WINDOWWIDTH - PADDLEOFFSET - LINETHICKNESS, playerTwoPosition, LINETHICKNESS,PADDLESIZE)
+    ball = pygame.Rect(ballX, ballY, LINETHICKNESS, LINETHICKNESS)
+
+    #Draws the starting position of the Arena
+    drawArena()
+    drawPaddle(paddle1)
+    drawPaddle(paddle2)
+    drawBall(ball)
+
+    pygame.mouse.set_visible(0) # make cursor invisible
+
+    while True: #main game loop
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            # mouse movement commands
+            elif event.type == MOUSEMOTION:
+                mousex, mousey = event.pos
+                paddle1.y = mousey
+
+        drawArena()
+        drawPaddle(paddle1)
+        drawPaddle(paddle2)
+        drawBall(ball)
+
+        ball = moveBall(ball, ballDirX, ballDirY)
+        ballDirX, ballDirY = checkEdgeCollision(ball, ballDirX, ballDirY)
+        score = checkPointScored(paddle1, ball, score, ballDirX)
+        ballDirX = ballDirX * checkHitBall(ball, paddle1, paddle2, ballDirX)
+        paddle2 = artificialIntelligence (ball, ballDirX, paddle2)
+
+        displayScore(score)
+
+        pygame.display.update()
+        FPSCLOCK.tick(FPS)
+
+if __name__=='__main__':
+    main()
+
+#Most importantly don't be daunted! All will be revealed throughout this tutorial.
+
+#Stage 1 - Create a blank screen
+
+import pygame, sys
+from pygame.locals import *
+
+# Number of frames per second
+# Change this value to speed up or slow down your game
+FPS = 200
+
+#Global Variables to be used through our program
+WINDOWWIDTH = 400
+WINDOWHEIGHT = 300
+
+#Main function
+def main():
+    pygame.init()
+    global DISPLAYSURF
+
+    FPSCLOCK = pygame.time.Clock()
+    DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH,WINDOWHEIGHT)) 
+    pygame.display.set_caption('Pong')
+
+    while True: #main game loop
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+
+        pygame.display.update()
+        FPSCLOCK.tick(FPS)
+
+if __name__=='__main__':
+    main()
